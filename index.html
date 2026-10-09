@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="OFPPT Challenge - Module 19 : L'Extrusion Gonflage. Quiz interactif sur les têtes, le taux de gonflage, le poids au mètre, le tirage et les défauts.">
+<title>OFPPT CHALLENGE — Module 19 : L'Extrusion Gonflage</title>
+<style>
+/* ==========================================================================
+   VARIABLES & RESET
+   ========================================================================== */
+:root{
+  --bleu-nuit:#0b1220;
+  --bleu-profond:#111c33;
+  --bleu-carte:#16213e;
+  --bleu-bord:#243b55;
+  --orange:#ff7a1a;
+  --orange-fonce:#e06500;
+  --vert:#16a34a;
+  --vert-clair:#4ade80;
+  --rouge:#dc2626;
+  --rouge-clair:#fca5a5;
+  --jaune:#facc15;
+  --texte:#e8eef7;
+  --texte-doux:#9fb0c7;
+  --rayon:14px;
+  --rayon-sm:8px;
+  --ombre:0 6px 20px rgba(0,0,0,.35);
+  --transition:.25s ease;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+html{scroll-behavior:smooth}
+
+body{
+  font-family:'Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+  background:radial-gradient(circle at 20% 0%,#15243f 0%,var(--bleu-nuit) 55%,#05080f 100%);
+  color:var(--texte);
+  min-height:100vh;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ==========================================================================
+   ACCESSIBILITÉ
+   ========================================================================== */
+:focus-visible{
+  outline:3px solid var(--orange);
+  outline-offset:2px;
+  border-radius:4px;
+}
+
+.sr-only{
+  position:absolute;width:1px;height:1px;padding:0;margin:-1px;
+  overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;
+}
+
+.skip-link{
+  position:absolute;left:-9999px;top:0;z-index:1000;
+  background:var(--orange);color:#fff;padding:10px 16px;
+  border-radius:0 0 var(--rayon-sm) 0;font-weight:700;text-decoration:none;
+}
+.skip-link:focus{left:0}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{
+    animation-duration:.001ms!important;
+    animation-iteration-count:1!important;
+    transition-duration:.001ms!important;
+    scroll-behavior:auto!important;
+  }
+}
+
+/* ==========================================================================
+   HEADER
+   ========================================================================== */
+header{
+  position:sticky;top:0;z-index:50;
+  background:rgba(11,18,32,.92);
+  backdrop-filter:blur(10px);
+  border-bottom:3px solid var(--orange);
+  padding:14px 16px 10px;
+}
+
+.header-top{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;flex-wrap:wrap;max-width:1100px;margin:0 auto;
+}
+
+.brand h1{
+  font-size:clamp(1.1rem,2.5vw,1.5rem);
+  font-weight:800;letter-spacing:.5px;color:var(--orange);
+  display:flex;align-items:center;gap:8px;
+}
+.brand h1 span{color:var(--texte)}
+.brand p{
+  font-size:.8rem;color:var(--texte-doux);
+  margin-top:2px;letter-spacing:.4px;text-transform:uppercase;
+}
+
+/* Tableau de bord */
+.stats{
+  display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
+}
+.stat{
+  background:var(--bleu-carte);
+  border:1px solid var(--bleu-bord);
+  border-radius:999px;
+  padding:6px 14px;
+  font-size:.85rem;
+  font-weight:600;
+  display:flex;align-items:center;gap:6px;
+  white-space:nowrap;
+}
+.stat .icon{font-size:1rem}
+.stat[data-highlight="true"]{border-color:var(--orange)}
+
+/* Barre de progression */
+.progress-wrap{max-width:1100px;margin:10px auto 0}
+.progress{
+  height:8px;background:var(--bleu-bord);
+  border-radius:999px;overflow:hidden;
+}
+.progress-bar{
+  height:100%;width:25%;
+  background:linear-gradient(90deg,var(--orange),#ffb347);
+  border-radius:999px;
+  transition:width .5s ease;
+}
+
+/* ==========================================================================
+   LAYOUT
+   ========================================================================== */
+.container{
+  max-width:1000px;
+  margin:24px auto 60px;
+  padding:0 16px;
+}
+
+.card{
+  background:linear-gradient(180deg,var(--bleu-carte),var(--bleu-profond));
+  border:1px solid var(--bleu-bord);
+  border-radius:var(--rayon);
+  padding:22px;
+  margin-bottom:22px;
+  box-shadow:var(--ombre);
+  animation:fadeIn .4s ease;
+}
+
+@keyframes fadeIn{
+  from{opacity:0;transform:translateY(12px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.card h2{
+  color:var(--orange);
+  font-size:clamp(1rem,2.2vw,1.25rem);
+  margin-bottom:14px;
+  display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid var(--bleu-bord);
+  padding-bottom:10px;
+}
+
+.card h3{
+  color:var(--texte);
+  font-size:1rem;
+  margin:16px 0 8px;
+}
+
+.card p{margin-bottom:10px;color:var(--texte)}
+.card p.lead{color:var(--texte-doux);font-size:.92rem}
+
+/* Encadrés formules */
+.formula{
+  background:#0a1020;
+  border-left:4px solid var(--orange);
+  border-radius:var(--rayon-sm);
+  padding:12px 14px;
+  margin:12px 0;
+  font-family:'Consolas','Courier New',monospace;
+  font-size:.9rem;
+  color:#ffd9b3;
+  overflow-x:auto;
+  line-height:1.7;
+}
+.formula strong{color:var(--orange)}
+
+/* ==========================================================================
+   BOUTONS
+   ========================================================================== */
+button{
+  font-family:inherit;
+  font-size:.9rem;
+  font-weight:700;
+  cursor:pointer;
+  border:none;
+  border-radius:var(--rayon-sm);
+  padding:11px 18px;
+  background:var(--orange);
+  color:#fff;
+  transition:transform var(--transition),background var(--transition),box-shadow var(--transition);
+  box-shadow:0 3px 0 var(--orange-fonce);
+}
+button:hover:not(:disabled){background:#ff8f3f;transform:translateY(-1px)}
+button:active:not(:disabled){transform:translateY(1px);box-shadow:0 1px 0 var(--orange-fonce)}
+button:disabled{opacity:.55;cursor:not-allowed;box-shadow:none}
+
+button.secondary{background:var(--bleu-bord);box-shadow:0 3px 0 #16243a;color:var(--texte)}
+button.secondary:hover:not(:disabled){background:#2e4a68}
+
+button.ghost{background:transparent;border:1px solid var(--bleu-bord);color:var(--texte);box-shadow:none}
+button.ghost:hover:not(:disabled){background:var(--bleu-carte)}
+
+button.correct{background:var(--vert)!important;box-shadow:0 3px 0 #0f7a37!important}
+button.wrong{background:var(--rouge)!important;box-shadow:0 3px 0 #991b1b!important}
+
+/* Groupes de boutons réponses */
+.answers{display:flex;flex-wrap:wrap;gap:10px;margin:10px 0}
+
+/* ==========================================================================
+   CHAMPS
+   ========================================================================== */
+.field-row{
+  display:flex;flex-wrap:wrap;align-items:center;gap:10px;
+  margin:10px 0;
+}
+.field-row label{font-size:.9rem;color:var(--texte-doux);font-weight:600}
+
+input[type="number"]{
+  font-family:inherit;
+  font-size:.95rem;
+  padding:10px 12px;
+  border-radius:var(--rayon-sm);
+  border:1px solid #3b5573;
+  background:#0a1020;
+  color:var(--texte);
+  width:120px;
+  text-align:center;
+  transition:border-color var(--transition),box-shadow var(--transition);
+}
+input[type="number"]:focus{
+  border-color:var(--orange);
+  box-shadow:0 0 0 3px rgba(255,122,26,.25);
+}
+input[type="number"]::placeholder{color:#5b6d85}
+
+/* ==========================================================================
+   RÉSULTATS / FEEDBACK
+   ========================================================================== */
+.result-box{
+  padding:12px 14px;
+  border-radius:var(--rayon-sm);
+  margin-top:10px;
+  font-size:.9rem;
+  line-height:1.6;
+  animation:fadeIn .3s ease;
+}
+.result-box.success{
+  background:rgba(22,163,74,.15);
+  border:1px solid var(--vert);
+  color:var(--vert-clair);
+}
+.result-box.error{
+  background:rgba(220,38,38,.15);
+  border:1px solid var(--rouge);
+  color:var(--rouge-clair);
+}
+.result-box.info{
+  background:rgba(255,122,26,.12);
+  border:1px solid var(--orange);
+  color:#ffd9b3;
+}
+
+/* ==========================================================================
+   CALCULATEUR
+   ========================================================================== */
+.calc-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:12px;
+  margin:14px 0;
+}
+.calc-grid .field{display:flex;flex-direction:column;gap:4px}
+.calc-grid .field label{font-size:.8rem;color:var(--texte-doux);font-weight:600}
+.calc-grid input{width:100%}
+
+.calc-results{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:12px;
+  margin-top:16px;
+}
+.calc-result-card{
+  background:#0a1020;
+  border:1px solid var(--bleu-bord);
+  border-radius:var(--rayon-sm);
+  padding:14px;
+  text-align:center;
+}
+.calc-result-card .label{
+  font-size:.75rem;color:var(--texte-doux);
+  text-transform:uppercase;letter-spacing:.5px;font-weight:700;
+}
+.calc-result-card .value{
+  font-size:1.5rem;font-weight:800;color:var(--orange);
+  margin:6px 0;
+  font-variant-numeric:tabular-nums;
+}
+.calc-result-card .status{font-size:.8rem;font-weight:600}
+.calc-result-card.ok .value{color:var(--vert-clair)}
+.calc-result-card.ok{border-color:var(--vert)}
+.calc-result-card.ko .value{color:var(--rouge-clair)}
+.calc-result-card.ko{border-color:var(--rouge)}
+.calc-result-card .note{font-size:.75rem;color:var(--texte-doux);margin-top:4px}
+
+/* ==========================================================================
+   ÉCRAN FINAL
+   ========================================================================== */
+.final-screen{
+  text-align:center;
+  padding:10px;
+}
+.final-screen h2{
+  justify-content:center;
+  font-size:clamp(1.3rem,3vw,1.8rem);
+  border:none;
+}
+.final-score{
+  font-size:3rem;font-weight:900;color:var(--orange);
+  margin:10px 0;
+  font-variant-numeric:tabular-nums;
+}
+.final-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(140px,1fr));
+  gap:12px;
+  margin:20px 0;
+}
+.final-item{
+  background:#0a1020;
+  border:1px solid var(--bleu-bord);
+  border-radius:var(--rayon-sm);
+  padding:14px;
+}
+.final-item .label{font-size:.75rem;color:var(--texte-doux);text-transform:uppercase;font-weight:700;letter-spacing:.5px}
+.final-item .value{font-size:1.4rem;font-weight:800;color:var(--texte);margin-top:4px}
+.final-item .value.good{color:var(--vert-clair)}
+.final-item .value.warn{color:var(--jaune)}
+
+.recap-formulas{
+  text-align:left;
+  background:#0a1020;
+  border-radius:var(--rayon-sm);
+  border:1px solid var(--bleu-bord);
+  padding:16px;
+  margin:20px 0;
+}
+.recap-formulas h3{color:var(--orange);margin-bottom:10px}
+.recap-formulas ul{list-style:none;padding:0}
+.recap-formulas li{
+  padding:6px 0;
+  border-bottom:1px dashed var(--bleu-bord);
+  font-size:.9rem;
+}
+.recap-formulas li:last-child{border-bottom:none}
+.recap-formulas code{
+  background:#16213e;padding:2px 6px;border-radius:4px;
+  font-family:'Consolas',monospace;color:#ffd9b3;
+}
+
+/* ==========================================================================
+   UTILITAIRES
+   ========================================================================== */
+.hidden{display:none!important}
+.mt{margin-top:14px}
+.text-center{text-align:center}
+.badge{
+  display:inline-block;font-size:.72rem;font-weight:700;
+  padding:3px 10px;border-radius:999px;
+  background:var(--bleu-bord);color:var(--texte-doux);
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.badge.orange{background:rgba(255,122,26,.2);color:var(--orange)}
+.badge.green{background:rgba(22,163,74,.2);color:var(--vert-clair)}
+.badge.red{background:rgba(220,38,38,.2);color:var(--rouge-clair)}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width:640px){
+  header{padding:10px 12px 8px}
+  .header-top{flex-direction:column;align-items:flex-start}
+  .stats{width:100%;justify-content:space-between}
+  .stat{padding:5px 10px;font-size:.78rem}
+  .card{padding:16px}
+  .answers button{flex:1 1 100%}
+  .field-row{flex-direction:column;align-items:stretch}
+  .field-row input{width:100%}
+  .calc-grid{grid-template-columns:1fr}
+  .final-score{font-size:2.4rem}
+}
+
+@media (min-width:641px) and (max-width:900px){
+  .container{padding:0 20px}
+}
+</style>
+</head>
+<body>
+
+<a href="#main" class="skip-link">Aller au contenu principal</a>
+
+<!-- =====================================================================
+     HEADER
+     ===================================================================== -->
+<header role="banner">
+  <div class="header-top">
+    <div class="brand">
+      <h1>OFPPT <span>CHALLENGE</span> 🔥</h1>
+      <p>Module 19 · L'Extrusion Gonflage · TG / Pm / T</p>
+    </div>
+    <div class="stats" role="status" aria-live="polite">
+      <div class="stat" data-highlight="true">
+        <span class="icon" aria-hidden="true">⭐</span>
+        <span>Score : <strong id="score">0</strong></span>
+      </div>
+      <div class="stat">
+        <span class="icon" aria-hidden="true">🎯</span>
+        <span>Niveau : <strong id="level">1/4</strong></span>
+      </div>
+      <div class="stat">
+        <span class="icon" aria-hidden="true">⏱️</span>
+        <span>Temps : <strong id="timer">00:00</strong></span>
+      </div>
+    </div>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="25" aria-label="Progression du challenge">
+      <div id="progressBar" class="progress-bar"></div>
+    </div>
+  </div>
+</header>
+
+<!-- =====================================================================
+     CONTENU PRINCIPAL
+     ===================================================================== -->
+<main id="main" class="container" role="main">
+
+  <!-- ================= NIVEAU 1 ================= -->
+  <section id="level1" class="card" aria-labelledby="titre-n1">
+    <h2 id="titre-n1">🏭 Niveau 1 — Machine &amp; Têtes <span class="badge orange">P14–27</span></h2>
+    <p class="lead">Reconnais les types de têtes d'extrusion et leurs caractéristiques techniques.</p>
+
+    <div class="formula">
+      <strong>Tête latérale</strong> = gorge-cœur = <strong>LIGNE DE SOUDURE</strong><br>
+      <strong>Tête centrale</strong> = sans soudure · coextrusion jusqu'à <strong>9 couches</strong>
+    </div>
+
+    <h3>Question 1 — Quelle tête produit une ligne de soudure ?</h3>
+    <div class="answers" id="q1-answers">
+      <button type="button" data-correct="true">Latérale gorge-cœur</button>
+      <button type="button" data-correct="false">Centrale</button>
+    </div>
+    <div id="q1-feedback" role="status" aria-live="polite"></div>
+
+    <h3>Question 2 — Que désigne l'entrefer ?</h3>
+    <div class="answers" id="q2-answers">
+      <button type="button" data-correct="true">Distance poinçon-filière</button>
+      <button type="button" data-correct="false">Diamètre du ballon</button>
+    </div>
+    <div id="q2-feedback" role="status" aria-live="polite"></div>
+
+    <button type="button" id="btn-to-level2" class="secondary hidden mt">Suivant → TG</button>
+  </section>
+
+  <!-- ================= NIVEAU 2 ================= -->
+  <section id="level2" class="card hidden" aria-labelledby="titre-n2">
+    <h2 id="titre-n2">📐 Niveau 2 — Taux de gonflage TG <span class="badge orange">P29 · Ex P53–55</span></h2>
+    <p class="lead">Calcule le taux de gonflage et vérifie s'il est dans la plage acceptable (1,5 à 3,5).</p>
+
+    <div class="formula">
+      <strong>TG = (2 × Laize) / (π × Df)</strong><br>
+      Acceptable : <strong>1,5 à 3,5</strong><br>
+      Exemple P34 : Laize 320 mm · Df 125 mm → <strong>TG ≈ 1,63</strong>
+    </div>
+
+    <!-- Exercice 1 -->
+    <h3>Exercice 1 — Df = 50 mm · Laize = 400 mm</h3>
+    <div class="field-row">
+      <label for="tg1">TG calculé :</label>
+      <input id="tg1" type="number" step="0.01" min="0" inputmode="decimal" placeholder="ex: 5.09" aria-describedby="tg1-feedback">
+      <button type="button" id="btn-tg1">Vérifier</button>
+    </div>
+    <div id="tg1-feedback" role="status" aria-live="polite"></div>
+
+    <!-- Exercice 2 -->
+    <h3>Exercice 2 — Df = 100 mm · Laize = 400 mm</h3>
+    <div class="field-row">
+      <label for="tg2">TG calculé :</label>
+      <input id="tg2" type="number" step="0.01" min="0" inputmode="decimal" placeholder="ex: 2.54" aria-describedby="tg2-feedback">
+      <button type="button" id="btn-tg2">Vérifier</button>
+    </div>
+    <div id="tg2-feedback" role="status" aria-live="polite"></div>
+
+    <!-- Exercice 3 -->
+    <h3>Exercice 3 — Df = 150 mm · Laize = 500 mm</h3>
+    <div class="field-row">
+      <label for="tg3">TG calculé :</label>
+      <input id="tg3" type="number" step="0.01" min="0" inputmode="decimal" placeholder="ex: 2.12" aria-describedby="tg3-feedback">
+      <button type="button" id="btn-tg3">Vérifier</button>
+    </div>
+    <div id="tg3-feedback" role="status" aria-live="polite"></div>
+
+    <button type="button" id="btn-to-level3" class="secondary hidden mt">Suivant → Poids &amp; Tirage</button>
+  </section>
+
+  <!-- ================= NIVEAU 3 ================= -->
+  <section id="level3" class="card hidden" aria-labelledby="titre-n3">
+    <h2 id="titre-n3">⚖️ Niveau 3 — Poids au mètre &amp; Tirage <span class="badge orange">P31–34 · Ex P53–55</span></h2>
+    <p class="lead">Calcule le poids au mètre (Pm) et le tirage (T) à partir des formules du cours.</p>
+
+    <div class="formula">
+      <strong>Pm = Eg × 2 × Lp × ρ</strong> &nbsp;(Eg en mm)<br>
+      <strong>T = (Ef / Eg × 0,82) / TG</strong><br>
+      Exemple P34 : 0,05 × 640 × 0,925 = <strong>29,6 g/m</strong><br>
+      Exemple T : Ef 0,8 mm · Eg 0,05 mm · TG 1,63 → <strong>T ≈ 8,04</strong>
+    </div>
+
+    <!-- Pm Ex1 -->
+    <h3>Exercice Pm 1 — Eg = 15 µm · Lp = 400 mm · ρ = 0,955</h3>
+    <div class="field-row">
+      <label for="pm1">Pm (g/m) :</label>
+      <input id="pm1" type="number" step="0.01" min="0" inputmode="decimal" placeholder="ex: 11.46" aria-describedby="pm1-feedback">
+      <button type="button" id="btn-pm1">Vérifier</button>
+    </div>
+    <div id="pm1-feedback" role="status" aria-live="polite"></div>
+
+    <!-- Pm Ex2 -->
+    <h3>Exercice Pm 2 — Eg = 100 µm · Lp = 400 mm · ρ = 0,925</h3>
+    <div class="field-row">
+      <label for="pm2">Pm (g/m) :</label>
+      <input id="pm2" type="number" step="0.01" min="0" inputmode="decimal" placeholder="ex: 74" aria-describedby="pm2-feedback">
+      <button type="button" id="btn-pm2">Vérifier</button>
+    </div>
+    <div id="pm2-feedback" role="status" aria-live="polite"></div>
+
+    <!-- Tirage -->
+    <h3>Exercice Tirage — Ef = 0,8 mm · Eg = 15 µm · TG = 5,09</h3>
+    <div class="field-row">
+      <label for="tt1">T :</label>
+      <input id="tt1" type="number" step="0.01" min="0" inputmode="decimal" placeholder="ex: 8.59" aria-describedby="tt1-feedback">
+      <button type="button" id="btn-tt1">Vérifier</button>
+    </div>
+    <div id="tt1-feedback" role="status" aria-live="polite"></div>
+
+    <!-- Calculateur TP -->
+    <div class="formula mt" style="border-left-color:var(--orange)">
+      <h3 style="color:var(--orange);margin-bottom:10px">🧮 Calculateur TP</h3>
+      <p style="color:var(--texte-doux);font-size:.85rem;margin-bottom:12px">
+        Saisis les paramètres de production pour calculer automatiquement TG, Pm et T.
+      </p>
+      <div class="calc-grid">
+        <div class="field">
+          <label for="calc-df">Df (mm)</label>
+          <input id="calc-df" type="number" step="0.1" min="0.1" value="50" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label for="calc-laize">Laize (mm)</label>
+          <input id="calc-laize" type="number" step="1" min="1" value="400" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label for="calc-ef">Ef (mm)</label>
+          <input id="calc-ef" type="number" step="0.01" min="0.01" value="0.8" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label for="calc-eg">Eg (µm)</label>
+          <input id="calc-eg" type="number" step="1" min="1" value="15" inputmode="decimal">
+        </div>
+        <div class="field">
+          <label for="calc-rho">ρ (g/cm³)</label>
+          <input id="calc-rho" type="number" step="0.001" min="0.001" value="0.955" inputmode="decimal">
+        </div>
+      </div>
+      <div class="answers" style="margin-top:12px">
+        <button type="button" id="btn-calc">Calculer</button>
+        <button type="button" id="btn-calc-reset" class="ghost">Réinitialiser</button>
+      </div>
+      <div id="calc-results" class="calc-results" role="status" aria-live="polite"></div>
+      <div id="calc-error" role="alert"></div>
+    </div>
+
+    <button type="button" id="btn-to-level4" class="secondary hidden mt">Boss Final → Défauts</button>
+  </section>
+
+  <!-- ================= NIVEAU 4 ================= -->
+  <section id="level4" class="card hidden" aria-labelledby="titre-n4">
+    <h2 id="titre-n4">👹 Niveau 4 — Boss Final : Défauts &amp; Démarrage <span class="badge red">P50 · P52</span></h2>
+    <p class="lead">Identifie les causes des défauts et maîtrise la séquence de démarrage.</p>
+
+    <h3>Question 1 — Points noirs et grumeaux : causes et solutions ?</h3>
+    <div class="answers" id="q4-answers">
+      <button type="button" data-correct="true">Matière dégradée, filtre sale → Changer le filtre, purger</button>
+      <button type="button" data-correct="false">Trop de ventilation</button>
+    </div>
+    <div id="q4-feedback" role="status" aria-live="polite"></div>
+
+    <h3>Question 2 — Quel est l'ordre correct de démarrage ?</h3>
+    <div class="answers" id="q5-answers">
+      <button type="button" data-correct="true">Chauffe 1h → Poids au mètre → Fabriquer → Vérifier TG/T → Rosace → Production</button>
+      <button type="button" data-correct="false">Démarrer directement sans chauffe</button>
+    </div>
+    <div id="q5-feedback" role="status" aria-live="polite"></div>
+
+    <!-- Écran final -->
+    <div id="final-screen" class="final-screen hidden">
+      <h2>🎉 Mabrouk ! Module 19 terminé !</h2>
+      <div class="final-score" id="final-score">0</div>
+      <p id="final-message" class="lead"></p>
+
+      <div class="final-grid">
+        <div class="final-item">
+          <div class="label">Score</div>
+          <div class="value" id="final-score-detail">0</div>
+        </div>
+        <div class="final-item">
+          <div class="label">Réussite</div>
+          <div class="value" id="final-percent">0 %</div>
+        </div>
+        <div class="final-item">
+          <div class="label">Temps total</div>
+          <div class="value" id="final-time">00:00</div>
+        </div>
+        <div class="final-item">
+          <div class="label">Bonnes réponses</div>
+          <div class="value" id="final-correct">0</div>
+        </div>
+        <div class="final-item">
+          <div class="label">Questions traitées</div>
+          <div class="value" id="final-attempted">0</div>
+        </div>
+      </div>
+
+      <div class="recap-formulas">
+        <h3>📚 Récapitulatif des formules essentielles</h3>
+        <ul>
+          <li><strong>TG</strong> = <code>(2 × Laize) / (π × Df)</code> — plage acceptable : 1,5 à 3,5</li>
+          <li><strong>Pm</strong> = <code>Eg × 2 × Lp × ρ</code> — Eg en mm (µm ÷ 1000)</li>
+          <li><strong>T</strong> = <code>(Ef / Eg × 0,82) / TG</code> — plage limite haute ≈ 8</li>
+          <li><strong>Entrefer</strong> = distance poinçon-filière</li>
+          <li><strong>Tête latérale</strong> = gorge-cœur = ligne de soudure</li>
+          <li><strong>Tête centrale</strong> = sans soudure · coextrusion 9 couches</li>
+          <li><strong>Défauts points noirs</strong> → matière dégradée / filtre sale → changer filtre, purger</li>
+          <li><strong>Démarrage</strong> → chauffe 1h → poids mètre → fabriquer → TG/T → rosace → production</li>
+        </ul>
+      </div>
+
+      <button type="button" id="btn-restart">🔄 Rejouer le challenge</button>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ==========================================================================
+   OFPPT CHALLENGE — MODULE 19 : L'EXTRUSION GONFLAGE
+   JavaScript Vanilla — Logique métier, score, chrono, calculateur
+   ========================================================================== */
+(function () {
+  'use strict';
+
+  /* ---------------------------------------------------------------------
+     CONSTANTES & CONFIGURATION
+     --------------------------------------------------------------------- */
+  const CONFIG = {
+    TG_MIN: 1.5,
+    TG_MAX: 3.5,
+    T_MAX: 8,
+    T_MIN: 0.1,
+    POINTS: {
+      QCM: 10,
+      TG_EX: 20,
+      PM_EX: 20,
+      TIRA: 30,
+      BOSS: 15
+    },
+    TOTAL_QUESTIONS: 9, // 2 QCM N1 + 3 TG + 3 Pm/T + 1 boss (Q1) = 9 validations possibles
+    TOLERANCE: {
+      TG: 0.15,
+      PM1: 0.6,
+      PM2: 2,
+      TIRA: 0.6
+    }
+  };
+
+  const FORMULES = {
+    TG: (laize, df) => (2 * laize) / (Math.PI * df),
+    PM: (egMm, lp, rho) => egMm * 2 * lp * rho,
+    T: (ef, egMm, tg) => ((ef / egMm) * 0.82) / tg
+  };
+
+  /* ---------------------------------------------------------------------
+     ÉTAT GLOBAL
+     --------------------------------------------------------------------- */
+  const state = {
+    score: 0,
+    currentLevel: 1,
+    startTime: null,
+    timerInterval: null,
+    timerRunning: false,
+    // Suivi des validations pour éviter les points multiples
+    validated: {
+      q1: false, q2: false,
+      tg1: false, tg2: false, tg3: false,
+      pm1: false, pm2: false, tt1: false,
+      boss1: false, boss2: false
+    },
+    // Compteurs pour l'écran final
+    correctCount: 0,
+    attemptedCount: 0
+  };
+
+  /* ---------------------------------------------------------------------
+     RACCOURCIS DOM
+     --------------------------------------------------------------------- */
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => document.querySelectorAll(sel);
+
+  const dom = {
+    score: $('#score'),
+    level: $('#level'),
+    timer: $('#timer'),
+    progressBar: $('#progressBar'),
+    // Niveaux
+    level1: $('#level1'),
+    level2: $('#level2'),
+    level3: $('#level3'),
+    level4: $('#level4'),
+    // Boutons navigation
+    btnToLevel2: $('#btn-to-level2'),
+    btnToLevel3: $('#btn-to-level3'),
+    btnToLevel4: $('#btn-to-level4'),
+    // QCM N1
+    q1Answers: $('#q1-answers'),
+    q1Feedback: $('#q1-feedback'),
+    q2Answers: $('#q2-answers'),
+    q2Feedback: $('#q2-feedback'),
+    // TG
+    tg1: $('#tg1'), tg1Feedback: $('#tg1-feedback'), btnTg1: $('#btn-tg1'),
+    tg2: $('#tg2'), tg2Feedback: $('#tg2-feedback'), btnTg2: $('#btn-tg2'),
+    tg3: $('#tg3'), tg3Feedback: $('#tg3-feedback'), btnTg3: $('#btn-tg3'),
+    // Pm & T
+    pm1: $('#pm1'), pm1Feedback: $('#pm1-feedback'), btnPm1: $('#btn-pm1'),
+    pm2: $('#pm2'), pm2Feedback: $('#pm2-feedback'), btnPm2: $('#btn-pm2'),
+    tt1: $('#tt1'), tt1Feedback: $('#tt1-feedback'), btnTt1: $('#btn-tt1'),
+    // Calculateur
+    calcDf: $('#calc-df'), calcLaize: $('#calc-laize'), calcEf: $('#calc-ef'),
+    calcEg: $('#calc-eg'), calcRho: $('#calc-rho'),
+    btnCalc: $('#btn-calc'), btnCalcReset: $('#btn-calc-reset'),
+    calcResults: $('#calc-results'), calcError: $('#calc-error'),
+    // Boss
+    q4Answers: $('#q4-answers'), q4Feedback: $('#q4-feedback'),
+    q5Answers: $('#q5-answers'), q5Feedback: $('#q5-feedback'),
+    // Écran final
+    finalScreen: $('#final-screen'),
+    finalScore: $('#final-score'),
+    finalScoreDetail: $('#final-score-detail'),
+    finalPercent: $('#final-percent'),
+    finalTime: $('#final-time'),
+    finalCorrect: $('#final-correct'),
+    finalAttempted: $('#final-attempted'),
+    finalMessage: $('#final-message'),
+    btnRestart: $('#btn-restart')
+  };
+
+  /* ---------------------------------------------------------------------
+     UTILITAIRES
+     --------------------------------------------------------------------- */
+  function formatTime(seconds) {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }
+
+  function safeParseFloat(value) {
+    if (value === null || value === undefined) return NaN;
+    const str = String(value).trim().replace(',', '.');
+    if (str === '') return NaN;
+    const num = parseFloat(str);
+    return Number.isFinite(num) ? num : NaN;
+  }
+
+  function isValidNumber(value) {
+    return typeof value === 'number' && Number.isFinite(value);
+  }
+
+  function showFeedback(element, type, html) {
+    if (!element) return;
+    element.innerHTML = '<div class="result-box ' + type + '">' + html + '</div>';
+  }
+
+  function clearFeedback(element) {
+    if (element) element.innerHTML = '';
+  }
+
+  function addScore(points) {
+    state.score += points;
+    dom.score.textContent = state.score;
+  }
+
+  function updateProgress() {
+    const level = state.currentLevel;
+    const percent = Math.min(100, Math.round(((level - 1) / 3) * 100) + 25);
+    // Progression basée sur le niveau : N1=25%, N2=50%, N3=75%, N4=100%
+    const progressPercent = level === 1 ? 25 : level === 2 ? 50 : level === 3 ? 75 : 100;
+    dom.progressBar.style.width = progressPercent + '%';
+    dom.progressBar.parentElement.setAttribute('aria-valuenow', progressPercent);
+  }
+
+  /* ---------------------------------------------------------------------
+     CHRONOMÈTRE
+     --------------------------------------------------------------------- */
+  function startTimer() {
+    if (state.timerRunning) return;
+    state.startTime = Date.now();
+    state.timerRunning = true;
+    state.timerInterval = setInterval(function () {
+      const elapsed = Math.floor((Date.now() - state.startTime) / 1000);
+      dom.timer.textContent = formatTime(elapsed);
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (state.timerInterval) {
+      clearInterval(state.timerInterval);
+      state.timerInterval = null;
+    }
+    state.timerRunning = false;
+  }
+
+  function resetTimer() {
+    stopTimer();
+    state.startTime = null;
+    dom.timer.textContent = '00:00';
+  }
+
+  function getElapsedSeconds() {
+    if (!state.startTime) return 0;
+    return Math.floor((Date.now() - state.startTime) / 1000);
+  }
+
+  /* ---------------------------------------------------------------------
+     NAVIGATION ENTRE NIVEAUX
+     --------------------------------------------------------------------- */
+  function goToLevel(n) {
+    if (n < 1 || n > 4) return;
+    // Masquer tous les niveaux
+    dom.level1.classList.add('hidden');
+    dom.level2.classList.add('hidden');
+    dom.level3.classList.add('hidden');
+    dom.level4.classList.add('hidden');
+
+    // Afficher le niveau cible
+    const target = dom['level' + n];
+    if (target) target.classList.remove('hidden');
+
+    state.currentLevel = n;
+    dom.level.textContent = n + '/4';
+    updateProgress();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /* ---------------------------------------------------------------------
+     GESTION DES QCM (NIVEAU 1 & BOSS)
+     --------------------------------------------------------------------- */
+  function handleQcmAnswer(button, feedbackEl, stateKey, points, successMsg, errorMsg, onSuccess) {
+    if (state.validated[stateKey]) return; // Déjà validé
+
+    const isCorrect = button.dataset.correct === 'true';
+    state.attemptedCount++;
+
+    if (isCorrect) {
+      button.classList.add('correct');
+      // Désactiver tous les boutons du groupe
+      const group = button.parentElement;
+      if (group) {
+        group.querySelectorAll('button').forEach(function (btn) {
+          btn.disabled = true;
+        });
+      }
+      state.validated[stateKey] = true;
+      state.correctCount++;
+      addScore(points);
+      showFeedback(feedbackEl, 'success', '✅ ' + successMsg);
+      if (typeof onSuccess === 'function') onSuccess();
+    } else {
+      button.classList.add('wrong');
+      button.disabled = true;
+      showFeedback(feedbackEl, 'error', '❌ ' + errorMsg);
+    }
+  }
+
+  // Niveau 1 — Q1
+  dom.q1Answers.addEventListener('click', function (e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    handleQcmAnswer(
+      btn, dom.q1Feedback, 'q1', CONFIG.POINTS.QCM,
+      'Sah ! La tête latérale (gorge-cœur) produit une ligne de soudure.',
+      'Ghalat — La tête latérale gorge-cœur est la bonne réponse (P21).',
+      checkLevel1Complete
+    );
+  });
+
+  // Niveau 1 — Q2
+  dom.q2Answers.addEventListener('click', function (e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    handleQcmAnswer(
+      btn, dom.q2Feedback, 'q2', CONFIG.POINTS.QCM,
+      'Sah ! L\'entrefer est la distance poinçon-filière.',
+      'Ghalat — L\'entrefer désigne la distance poinçon-filière.',
+      checkLevel1Complete
+    );
+  });
+
+  function checkLevel1Complete() {
+    if (state.validated.q1 && state.validated.q2) {
+      dom.btnToLevel2.classList.remove('hidden');
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+     NIVEAU 2 — TG
+     --------------------------------------------------------------------- */
+  function checkTg(exerciseNum, inputEl, feedbackEl, df, laize, points) {
+    const stateKey = 'tg' + exerciseNum;
+    if (state.validated[stateKey]) return;
+
+    const value = safeParseFloat(inputEl.value);
+    if (!isValidNumber(value)) {
+      showFeedback(feedbackEl, 'error', '❌ Saisis une valeur numérique valide.');
+      return;
+    }
+
+    const real = FORMULES.TG(laize, df);
+    const tolerance = CONFIG.TOLERANCE.TG;
+    const diff = Math.abs(value - real);
+
+    if (diff <= tolerance) {
+      state.validated[stateKey] = true;
+      state.correctCount++;
+      addScore(points);
+      const acceptable = real >= CONFIG.TG_MIN && real <= CONFIG.TG_MAX;
+      const status = acceptable
+        ? '✅ TG = ' + real.toFixed(2) + ' — Acceptable'
+        : '⚠️ TG = ' + real.toFixed(2) + ' — Non acceptable (hors plage ' + CONFIG.TG_MIN + '–' + CONFIG.TG_MAX + ')';
+      showFeedback(feedbackEl, acceptable ? 'success' : 'info', status);
+      inputEl.disabled = true;
+      dom['btnTg' + exerciseNum].disabled = true;
+      checkLevel2Complete();
+    } else {
+      const hint = 'Rappel : TG = 2×' + laize + ' / (π×' + df + ') = ' + real.toFixed(2);
+      showFeedback(feedbackEl, 'error', '❌ Incorrect. ' + hint);
+    }
+  }
+
+  dom.btnTg1.addEventListener('click', function () {
+    checkTg(1, dom.tg1, dom.tg1Feedback, 50, 400, CONFIG.POINTS.TG_EX);
+  });
+  dom.btnTg2.addEventListener('click', function () {
+    checkTg(2, dom.tg2, dom.tg2Feedback, 100, 400, CONFIG.POINTS.TG_EX);
+  });
+  dom.btnTg3.addEventListener('click', function () {
+    checkTg(3, dom.tg3, dom.tg3Feedback, 150, 500, CONFIG.POINTS.TG_EX);
+  });
+
+  function checkLevel2Complete() {
+    if (state.validated.tg1 && state.validated.tg2 && state.validated.tg3) {
+      dom.btnToLevel3.classList.remove('hidden');
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+     NIVEAU 3 — Pm & T
+     --------------------------------------------------------------------- */
+  function checkPm(exerciseNum, inputEl, feedbackEl, egMicrons, lp, rho, tolerance, points) {
+    const stateKey = 'pm' + exerciseNum;
+    if (state.validated[stateKey]) return;
+
+    const value = safeParseFloat(inputEl.value);
+    if (!isValidNumber(value)) {
+      showFeedback(feedbackEl, 'error', '❌ Saisis une valeur numérique valide.');
+      return;
+    }
+
+    const egMm = egMicrons / 1000;
+    const real = FORMULES.PM(egMm, lp, rho);
+    const diff = Math.abs(value - real);
+
+    if (diff <= tolerance) {
+      state.validated[stateKey] = true;
+      state.correctCount++;
+      addScore(points);
+      showFeedback(feedbackEl, 'success',
+        '✅ Pm = ' + real.toFixed(2) + ' g/m<br>' +
+        '<small>Calcul : ' + egMm + ' × 2 × ' + lp + ' × ' + rho + ' = ' + real.toFixed(2) + '</small>');
+      inputEl.disabled = true;
+      dom['btnPm' + exerciseNum].disabled = true;
+      checkLevel3Complete();
+    } else {
+      showFeedback(feedbackEl, 'error',
+        '❌ Incorrect.<br><small>Rappel : Eg = ' + egMicrons + ' µm = ' + egMm + ' mm<br>' +
+        'Pm = ' + egMm + ' × 2 × ' + lp + ' × ' + rho + ' = ' + real.toFixed(2) + ' g/m</small>');
+    }
+  }
+
+  dom.btnPm1.addEventListener('click', function () {
+    checkPm(1, dom.pm1, dom.pm1Feedback, 15, 400, 0.955, CONFIG.TOLERANCE.PM1, CONFIG.POINTS.PM_EX);
+  });
+  dom.btnPm2.addEventListener('click', function () {
+    checkPm(2, dom.pm2, dom.pm2Feedback, 100, 400, 0.925, CONFIG.TOLERANCE.PM2, CONFIG.POINTS.PM_EX);
+  });
+
+  // Tirage
+  dom.btnTt1.addEventListener('click', function () {
+    if (state.validated.tt1) return;
+
+    const value = safeParseFloat(dom.tt1.value);
+    if (!isValidNumber(value)) {
+      showFeedback(dom.tt1Feedback, 'error', '❌ Saisis une valeur numérique valide.');
+      return;
+    }
+
+    const ef = 0.8;
+    const egMm = 0.015;
+    const tg = 5.0929; // Valeur exacte pour l'exercice
+    const real = FORMULES.T(ef, egMm, tg);
+    const diff = Math.abs(value - real);
+
+    if (diff <= CONFIG.TOLERANCE.TIRA) {
+      state.validated.tt1 = true;
+      state.correctCount++;
+      addScore(CONFIG.POINTS.TIRA);
+      const limite = real <= CONFIG.T_MAX;
+      const status = limite
+        ? '✅ T = ' + real.toFixed(2) + ' — Dans la limite (max ' + CONFIG.T_MAX + ')'
+        : '⚠️ T = ' + real.toFixed(2) + ' — Limite haute dépassée (max ' + CONFIG.T_MAX + ')';
+      showFeedback(dom.tt1Feedback, limite ? 'success' : 'info',
+        status + '<br><small>Calcul : (0,8 / 0,015 × 0,82) / 5,09 = ' + real.toFixed(2) + '</small>');
+      dom.tt1.disabled = true;
+      dom.btnTt1.disabled = true;
+      checkLevel3Complete();
+    } else {
+      showFeedback(dom.tt1Feedback, 'error',
+        '❌ Incorrect.<br><small>Rappel : T = (0,8 / 0,015 × 0,82) / 5,09 = ' + real.toFixed(2) + '</small>');
+    }
+  });
+
+  function checkLevel3Complete() {
+    if (state.validated.pm1 && state.validated.pm2 && state.validated.tt1) {
+      dom.btnToLevel4.classList.remove('hidden');
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+     CALCULATEUR TP
+     --------------------------------------------------------------------- */
+  function renderCalcResult(container, label, value, unit, status, note) {
+    const card = document.createElement('div');
+    card.className = 'calc-result-card ' + (status === 'ok' ? 'ok' : status === 'ko' ? 'ko' : '');
+
+    const labelEl = document.createElement('div');
+    labelEl.className = 'label';
+    labelEl.textContent = label;
+
+    const valueEl = document.createElement('div');
+    valueEl.className = 'value';
+    valueEl.textContent = value + (unit ? ' ' + unit : '');
+
+    const statusEl = document.createElement('div');
+    statusEl.className = 'status';
+    statusEl.textContent = status === 'ok' ? '✅ Acceptable' : status === 'ko' ? '❌ Hors limites' : 'ℹ️ Information';
+
+    card.appendChild(labelEl);
+    card.appendChild(valueEl);
+    card.appendChild(statusEl);
+
+    if (note) {
+      const noteEl = document.createElement('div');
+      noteEl.className = 'note';
+      noteEl.textContent = note;
+      card.appendChild(noteEl);
+    }
+
+    container.appendChild(card);
+  }
+
+  function calculateTP() {
+    dom.calcResults.innerHTML = '';
+    dom.calcError.innerHTML = '';
+
+    const df = safeParseFloat(dom.calcDf.value);
+    const laize = safeParseFloat(dom.calcLaize.value);
+    const ef = safeParseFloat(dom.calcEf.value);
+    const egMicrons = safeParseFloat(dom.calcEg.value);
+    const rho = safeParseFloat(dom.calcRho.value);
+
+    // Validation
+    const errors = [];
+    if (!isValidNumber(df) || df <= 0) errors.push('Df doit être un nombre strictement positif.');
+    if (!isValidNumber(laize) || laize <= 0) errors.push('Laize doit être un nombre strictement positif.');
+    if (!isValidNumber(ef) || ef <= 0) errors.push('Ef doit être un nombre strictement positif.');
+    if (!isValidNumber(egMicrons) || egMicrons <= 0) errors.push('Eg doit être un nombre strictement positif (µm).');
+    if (!isValidNumber(rho) || rho <= 0) errors.push('ρ doit être un nombre strictement positif.');
+
+    if (errors.length > 0) {
+      dom.calcError.innerHTML = '<div class="result-box error">⚠️ ' + errors.join('<br>') + '</div>';
+      return;
+    }
+
+    const egMm = egMicrons / 1000;
+    const tg = FORMULES.TG(laize, df);
+    const pm = FORMULES.PM(egMm, laize, rho);
+    const t = FORMULES.T(ef, egMm, tg);
+
+    // TG
+    const tgOk = tg >= CONFIG.TG_MIN && tg <= CONFIG.TG_MAX;
+    renderCalcResult(
+      dom.calcResults, 'TG', tg.toFixed(2), '',
+      tgOk ? 'ok' : 'ko',
+      tgOk ? 'Dans la plage ' + CONFIG.TG_MIN + '–' + CONFIG.TG_MAX : 'Plage recommandée : ' + CONFIG.TG_MIN + '–' + CONFIG.TG_MAX
+    );
+
+    // Pm
+    renderCalcResult(
+      dom.calcResults, 'Pm', pm.toFixed(2), 'g/m',
+      'info',
+      'Eg = ' + egMicrons + ' µm = ' + egMm.toFixed(4) + ' mm'
+    );
+
+    // T
+    const tOk = t <= CONFIG.T_MAX;
+    renderCalcResult(
+      dom.calcResults, 'T', t.toFixed(2), '',
+      tOk ? 'ok' : 'ko',
+      tOk ? 'Limite haute ' + CONFIG.T_MAX : 'Dépasse la limite de ' + CONFIG.T_MAX
+    );
+
+    // Formules utilisées
+    const formulaNote = document.createElement('div');
+    formulaNote.className = 'result-box info';
+    formulaNote.style.gridColumn = '1 / -1';
+    formulaNote.innerHTML = '<strong>Formules utilisées :</strong><br>' +
+      'TG = (2 × ' + laize + ') / (π × ' + df + ') = ' + tg.toFixed(2) + '<br>' +
+      'Pm = ' + egMm.toFixed(4) + ' × 2 × ' + laize + ' × ' + rho + ' = ' + pm.toFixed(2) + ' g/m<br>' +
+      'T = (' + ef + ' / ' + egMm.toFixed(4) + ' × 0,82) / ' + tg.toFixed(2) + ' = ' + t.toFixed(2);
+    dom.calcResults.appendChild(formulaNote);
+  }
+
+  dom.btnCalc.addEventListener('click', calculateTP);
+
+  dom.btnCalcReset.addEventListener('click', function () {
+    dom.calcDf.value = '50';
+    dom.calcLaize.value = '400';
+    dom.calcEf.value = '0.8';
+    dom.calcEg.value = '15';
+    dom.calcRho.value = '0.955';
+    dom.calcResults.innerHTML = '';
+    dom.calcError.innerHTML = '';
+  });
+
+  // Calcul automatique lors de la modification des champs (debounce léger)
+  let calcTimeout = null;
+  function autoCalc() {
+    if (calcTimeout) clearTimeout(calcTimeout);
+    calcTimeout = setTimeout(calculateTP, 400);
+  }
+  [dom.calcDf, dom.calcLaize, dom.calcEf, dom.calcEg, dom.calcRho].forEach(function (input) {
+    input.addEventListener('input', autoCalc);
+  });
+
+  /* ---------------------------------------------------------------------
+     NIVEAU 4 — BOSS
+     --------------------------------------------------------------------- */
+  dom.q4Answers.addEventListener('click', function (e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    handleQcmAnswer(
+      btn, dom.q4Feedback, 'boss1', CONFIG.POINTS.BOSS,
+      'Sah ! Matière dégradée et filtre sale → changer le filtre et purger (P50).',
+      'Ghalat — Les points noirs/grumeaux viennent de matière dégradée et d\'un filtre sale.',
+      checkBossComplete
+    );
+  });
+
+  dom.q5Answers.addEventListener('click', function (e) {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    handleQcmAnswer(
+      btn, dom.q5Feedback, 'boss2', CONFIG.POINTS.BOSS,
+      'Sah ! Séquence de démarrage correcte (P52).',
+      'Ghalat — La séquence correcte commence par une chauffe d\'une heure.',
+      checkBossComplete
+    );
+  });
+
+  function checkBossComplete() {
+    if (state.validated.boss1 && state.validated.boss2) {
+      // Le niveau 4 est le dernier ; on affiche l'écran final
+      // Mais on attend que les deux réponses soient validées
+      setTimeout(showFinalScreen, 600);
+    }
+  }
+
+  /* ---------------------------------------------------------------------
+     ÉCRAN FINAL
+     --------------------------------------------------------------------- */
+  function showFinalScreen() {
+    stopTimer();
+
+    const elapsed = getElapsedSeconds();
+    const totalQuestions = CONFIG.TOTAL_QUESTIONS;
+    const attempted = Math.min(state.attemptedCount, totalQuestions);
+    const correct = state.correctCount;
+    const percent = totalQuestions > 0 ? Math.round((correct / totalQuestions) * 100) : 0;
+
+    dom.finalScore.textContent = state.score;
+    dom.finalScoreDetail.textContent = state.score;
+    dom.finalPercent.textContent = percent + ' %';
+    dom.finalTime.textContent = formatTime(elapsed);
+    dom.finalCorrect.textContent = correct;
+    dom.finalAttempted.textContent = attempted;
+
+    let message = '';
+    if (percent >= 80) {
+      message = '🏆 Excellent ! Tu maîtrises parfaitement le module 19.';
+    } else if (percent >= 60) {
+      message = '👍 Bien joué ! Encore quelques révisions sur les formules.';
+    } else if (percent >= 40) {
+      message = '📚 Pas mal, mais revois les formules TG, Pm et T.';
+    } else {
+      message = '💪 Courage ! Reprends le cours et réessaie.';
+    }
+    dom.finalMessage.textContent = message;
+
+    dom.finalScreen.classList.remove('hidden');
+    dom.finalScreen.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  /* ---------------------------------------------------------------------
+     REDÉMARRAGE
+     --------------------------------------------------------------------- */
+  dom.btnRestart.addEventListener('click', function () {
+    // Réinitialiser l'état
+    state.score = 0;
+    state.currentLevel = 1;
+    state.correctCount = 0;
+    state.attemptedCount = 0;
+    state.validated = {
+      q1: false, q2: false,
+      tg1: false, tg2: false, tg3: false,
+      pm1: false, pm2: false, tt1: false,
+      boss1: false, boss2: false
+    };
+
+    // Réinitialiser l'interface
+    dom.score.textContent = '0';
+    dom.level.textContent = '1/4';
+    resetTimer();
+
+    // Réactiver tous les boutons et champs
+    $$('button').forEach(function (btn) {
+      btn.disabled = false;
+      btn.classList.remove('correct', 'wrong');
+    });
+    $$('input[type="number"]').forEach(function (input) {
+      input.disabled = false;
+    });
+
+    // Vider les feedbacks
+    [dom.q1Feedback, dom.q2Feedback, dom.tg1Feedback, dom.tg2Feedback, dom.tg3Feedback,
+     dom.pm1Feedback, dom.pm2Feedback, dom.tt1Feedback, dom.q4Feedback, dom.q5Feedback,
+     dom.calcResults, dom.calcError].forEach(clearFeedback);
+
+    // Masquer les boutons de navigation et l'écran final
+    dom.btnToLevel2.classList.add('hidden');
+    dom.btnToLevel3.classList.add('hidden');
+    dom.btnToLevel4.classList.add('hidden');
+    dom.finalScreen.classList.add('hidden');
+
+    // Revenir au niveau 1
+    goToLevel(1);
+
+    // Redémarrer le chrono
+    startTimer();
+
+    // Remettre les valeurs du calculateur
+    dom.calcDf.value = '50';
+    dom.calcLaize.value = '400';
+    dom.calcEf.value = '0.8';
+    dom.calcEg.value = '15';
+    dom.calcRho.value = '0.955';
+  });
+
+  /* ---------------------------------------------------------------------
+     INITIALISATION
+     --------------------------------------------------------------------- */
+  function init() {
+    // Boutons de navigation
+    dom.btnToLevel2.addEventListener('click', function () { goToLevel(2); });
+    dom.btnToLevel3.addEventListener('click', function () { goToLevel(3); });
+    dom.btnToLevel4.addEventListener('click', function () { goToLevel(4); });
+
+    // Démarrer le chrono au premier chargement
+    startTimer();
+
+    // Calculer une première fois le calculateur
+    calculateTP();
+
+    // Mettre à jour la progression
+    updateProgress();
+
+    // Gestion du clavier pour les QCM (accessibilité)
+    // Les boutons sont déjà focusables et activables via Entrée/Espace
+  }
+
+  // Lancer l'application au chargement du DOM
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+
+})();
+</script>
+
+</body>
+</html>
